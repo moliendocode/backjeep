@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	GetAllUsers() ([]models.User, error)
 	CreateUser(user models.CreateUserRequest) (models.User, error)
+	GetUserByEmail(email string) (models.User, error)
 }
 
 type UserRepo struct{}
@@ -48,5 +49,17 @@ func (ur *UserRepo) CreateUser(req models.CreateUserRequest) (models.User, error
 	if err != nil {
 		return models.User{}, err
 	}
+	return user, nil
+}
+
+func (ur *UserRepo) GetUserByEmail(email string) (models.User, error) {
+	query := "SELECT id, name, email, password FROM users WHERE email=$1"
+	row := utils.DB.QueryRow(query, email)
+
+	var user models.User
+	if err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password); err != nil {
+		return models.User{}, err
+	}
+
 	return user, nil
 }

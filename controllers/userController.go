@@ -20,7 +20,7 @@ func NewUserController(repo repositories.UserRepository) *UserController {
 func (uc *UserController) GetAllUsers(c echo.Context) error {
 	users, err := uc.Repo.GetAllUsers()
 	if err != nil {
-		log.Printf("Error al obtener usuarios: %v", err) // Aquí agregas el log
+		log.Printf("Error al obtener usuarios: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "No se pudieron recuperar los usuarios")
 	}
 	return c.JSON(http.StatusOK, users)

@@ -13,4 +13,5 @@ func InitializeRoutes(e *echo.Echo) {
 
 	e.GET("/users", userController.GetAllUsers)
 	e.POST("/user", userController.CreateUser)
+	e.POST("/login", userController.Login)
 }
