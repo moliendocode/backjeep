@@ -26,3 +26,9 @@ type CreateItemRequest struct {
 	Link        string   `json:"link"`
 	Images      []string `json:"images"`
 }
+
+type UpdateItemRequest struct {
+	CreateItemRequest
+	ImagesToDelete []string `json:"imagesToDelete"`
+	NewImages      []string `json:"newImages"`
+}

@@ -27,4 +27,6 @@ func InitializeRoutes(e *echo.Echo) {
 	r.POST("/user", userController.CreateUser)
 	r.GET("/items", controllers.GetItems)
 	r.POST("/items", controllers.CreateItem)
+	r.GET("/item", controllers.GetItemDetails)
+	r.PATCH("/item", controllers.UpdateItem)
 }
