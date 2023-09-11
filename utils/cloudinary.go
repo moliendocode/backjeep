@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
@@ -31,10 +30,10 @@ func InitCloudinary() {
 	}
 }
 
-func UploadImages(c echo.Context) error {
+func UploadImages(c echo.Context) ([]string, error) {
 	form, err := c.MultipartForm()
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, fmt.Sprintf("Error al obtener el formulario: %v", err))
+		return nil, fmt.Errorf("error al obtener el formulario: %v", err)
 	}
 
 	files := form.File["images"]
@@ -48,20 +47,17 @@ func UploadImages(c echo.Context) error {
 	for _, file := range files {
 		src, err := file.Open()
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error al abrir el archivo: %v", err))
+			return nil, fmt.Errorf("error al abrir el archivo: %v", err)
 		}
 
 		uploadResult, err := cld.Upload.Upload(ctx, src, uploadParams)
-		if err != nil {
-			src.Close()
-			return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error al subir la imagen: %v", err))
-		}
 		src.Close()
+		if err != nil {
+			return nil, fmt.Errorf("error al subir la imagen: %v", err)
+		}
 
 		urls = append(urls, uploadResult.SecureURL)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"urls": urls,
-	})
+	return urls, nil
 }

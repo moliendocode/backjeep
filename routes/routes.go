@@ -3,7 +3,6 @@ package routes
 import (
 	"backjeep/controllers"
 	"backjeep/repositories"
-	"backjeep/utils"
 
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -26,6 +25,6 @@ func InitializeRoutes(e *echo.Echo) {
 	r.Use(echojwt.WithConfig(jwtConfig))
 	r.GET("/users", userController.GetAllUsers)
 	r.POST("/user", userController.CreateUser)
-	r.POST("/upload", utils.UploadImages)
-	r.GET("items", controllers.GetItems)
+	r.GET("/items", controllers.GetItems)
+	r.POST("/items", controllers.CreateItem)
 }
