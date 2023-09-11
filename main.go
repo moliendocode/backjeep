@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 )
 
@@ -22,8 +23,12 @@ func main() {
 	}
 
 	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"https://localhost:3000", "http://localhost:3000"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 	routes.InitializeRoutes(e)
-	if err := e.Start(":3000"); err != nil {
+	if err := e.Start(":3001"); err != nil {
 		log.Printf("Error al iniciar el servidor: %v", err)
 	}
 }
