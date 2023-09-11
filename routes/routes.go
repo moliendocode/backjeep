@@ -20,13 +20,13 @@ func InitializeRoutes(e *echo.Echo) {
 	}
 
 	e.POST("/login", userController.Login)
+	e.GET("/items", controllers.GetItems)
+	e.GET("/item", controllers.GetItemDetails)
 
 	r := e.Group("")
 	r.Use(echojwt.WithConfig(jwtConfig))
 	r.GET("/users", userController.GetAllUsers)
 	r.POST("/user", userController.CreateUser)
-	r.GET("/items", controllers.GetItems)
 	r.POST("/items", controllers.CreateItem)
-	r.GET("/item", controllers.GetItemDetails)
 	r.PATCH("/item", controllers.UpdateItem)
 }
