@@ -12,6 +12,7 @@ import (
 func main() {
 	utils.InitViper()
 	dbURI := viper.GetString("DATABASE_URI")
+	utils.InitCloudinary()
 	utils.InitDB(dbURI)
 	defer utils.DB.Close()
 

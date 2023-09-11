@@ -20,7 +20,6 @@ func TestLogin(t *testing.T) {
 		Repo: &MockUserRepository{},
 	}
 
-	// Usuario de prueba
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("secret"), bcrypt.DefaultCost)
 	mockUser := models.User{
 		ID:       1,
@@ -29,7 +28,6 @@ func TestLogin(t *testing.T) {
 		Password: string(hashedPassword),
 	}
 
-	// 1. Login exitoso.
 	t.Run("successful login", func(t *testing.T) {
 		reqBody, _ := json.Marshal(map[string]string{
 			"email":    "shaggy@doo.com",
@@ -40,7 +38,6 @@ func TestLogin(t *testing.T) {
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
 
-		// Set the mock user in the mock DB
 		repositories.MockUserDB["shaggy@doo.com"] = &mockUser
 
 		if assert.NoError(t, mockUserController.Login(c)) {
@@ -48,7 +45,6 @@ func TestLogin(t *testing.T) {
 		}
 	})
 
-	// 2. Falla al bindear la solicitud (request mal formado).
 	t.Run("bind failure", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte("invalid json")))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -60,7 +56,6 @@ func TestLogin(t *testing.T) {
 		}
 	})
 
-	// 3. Usuario no encontrado.
 	t.Run("user not found", func(t *testing.T) {
 		reqBody, _ := json.Marshal(map[string]string{
 			"email":    "notfound@dubby.com",
@@ -76,7 +71,6 @@ func TestLogin(t *testing.T) {
 		}
 	})
 
-	// 4. Contraseña incorrecta.
 	t.Run("wrong password", func(t *testing.T) {
 		reqBody, _ := json.Marshal(map[string]string{
 			"email":    "shaggy@doo.com",
@@ -87,7 +81,6 @@ func TestLogin(t *testing.T) {
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
 
-		// Set the mock user in the mock DB
 		repositories.MockUserDB["shaggy@doo.com"] = &mockUser
 
 		if assert.Error(t, mockUserController.Login(c)) {
