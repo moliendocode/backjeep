@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"mime/multipart"
+	"sync"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
@@ -37,26 +39,62 @@ func UploadImages(c echo.Context) ([]string, error) {
 	}
 
 	files := form.File["images"]
-	var urls []string
+
+	var wg sync.WaitGroup
+
+	type result struct {
+		url string
+		err error
+	}
+
+	resultChan := make(chan result, len(files))
 
 	ctx := context.Background()
 	uploadParams := uploader.UploadParams{
 		Folder: "campjeep/",
 	}
 
+	const maxConcurrentUploads = 10
+	semaphore := make(chan struct{}, maxConcurrentUploads)
+
 	for _, file := range files {
-		src, err := file.Open()
-		if err != nil {
-			return nil, fmt.Errorf("error al abrir el archivo: %v", err)
-		}
+		wg.Add(1)
+		go func(file *multipart.FileHeader) {
+			semaphore <- struct{}{}
+			defer func() {
+				<-semaphore
+			}()
+			defer wg.Done()
 
-		uploadResult, err := cld.Upload.Upload(ctx, src, uploadParams)
-		src.Close()
-		if err != nil {
-			return nil, fmt.Errorf("error al subir la imagen: %v", err)
-		}
+			src, err := file.Open()
+			if err != nil {
+				resultChan <- result{err: fmt.Errorf("error al abrir el archivo: %v", err)}
+				return
+			}
 
-		urls = append(urls, uploadResult.SecureURL)
+			uploadResult, err := cld.Upload.Upload(ctx, src, uploadParams)
+
+			src.Close()
+			if err != nil {
+				resultChan <- result{err: fmt.Errorf("error al subir la imagen: %v", err)}
+				return
+			}
+
+			resultChan <- result{url: uploadResult.SecureURL}
+		}(file)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	var urls []string
+	for r := range resultChan {
+		if r.err != nil {
+			return nil, r.err
+		}
+		urls = append(urls, r.url)
 	}
 
 	return urls, nil
